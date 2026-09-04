@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../../api/auth";
 import { saveTokens } from "../../utils/token";
 import { useAuth } from "../../contexts/useAuth";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
 
 function Login() {
   const navigate = useNavigate();
@@ -42,165 +44,128 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">AgentFlow</h1>
+    <div className="flex min-h-screen items-center justify-center bg-page px-4">
+      <div className="w-full max-w-md">
+        <div className="mb-10 flex flex-col items-center">
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-xl font-extrabold text-white">
+            AF
+          </div>
 
-          <p className="mt-2 text-gray-500">AI Agent Platform</p>
+          <h1 className="text-2xl font-bold text-ink">AgentFlow</h1>
+          <p className="mt-1.5 text-[15px] text-ink-tertiary">
+            AI 에이전트를 만들고, 대화를 시작해보세요
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="아이디"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div className="rounded-3xl bg-surface p-8 shadow-card">
+          <form onSubmit={handleLogin} className="space-y-3">
+            <Input
+              type="email"
+              placeholder="이메일"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
 
-          <input
-            type="password"
-            placeholder="비밀번호"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-          />
+            <Input
+              type="password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white rounded-lg py-3 font-semibold hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {loading ? "로그인 중..." : "로그인"}
-          </button>
-        </form>
+            <Button type="submit" disabled={loading} fullWidth className="mt-5">
+              {loading ? "로그인 중..." : "로그인"}
+            </Button>
+          </form>
 
-        <div className="flex justify-center items-center gap-4 mt-6 text-sm text-gray-500">
-          <button
-            type="button"
-            onClick={() => setModal("findId")}
-            className="hover:text-blue-600"
-          >
-            아이디 찾기
-          </button>
+          <div className="mt-6 flex items-center justify-center gap-3 text-sm text-ink-tertiary">
+            <button
+              type="button"
+              onClick={() => setModal("findId")}
+              className="hover:text-ink-sub"
+            >
+              아이디 찾기
+            </button>
 
-          <span>|</span>
+            <span className="text-line">·</span>
 
-          <button
-            type="button"
-            onClick={() => setModal("findPassword")}
-            className="hover:text-blue-600"
-          >
-            비밀번호 찾기
-          </button>
+            <button
+              type="button"
+              onClick={() => setModal("findPassword")}
+              className="hover:text-ink-sub"
+            >
+              비밀번호 찾기
+            </button>
 
-          <span>|</span>
+            <span className="text-line">·</span>
 
-          <button
-            type="button"
-            onClick={() => setModal("signup")}
-            className="hover:text-blue-600"
-          >
-            회원가입
-          </button>
+            <button
+              type="button"
+              onClick={() => setModal("signup")}
+              className="hover:text-ink-sub"
+            >
+              회원가입
+            </button>
+          </div>
         </div>
       </div>
 
-      {modal && <Modal type={modal} onClose={() => setModal(null)} />}
+      {modal && <AuthModal type={modal} onClose={() => setModal(null)} />}
     </div>
   );
 }
 
-function Modal({ type, onClose }) {
+function AuthModal({ type, onClose }) {
   const title = {
     findId: "아이디 찾기",
     findPassword: "비밀번호 찾기",
     signup: "회원가입",
   }[type];
 
+  const description = {
+    findId: "가입할 때 사용한 이메일을 입력해주세요.",
+    findPassword: "가입한 이메일을 입력해주세요.",
+    signup: "몇 가지 정보만 입력하면 바로 시작할 수 있어요.",
+  }[type];
+
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-md p-6"
+        className="w-full max-w-md rounded-3xl bg-surface p-8 shadow-float"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">{title}</h2>
+        <div className="mb-1 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-ink">{title}</h2>
 
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 text-xl"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-tertiary hover:bg-surface-alt"
           >
-            ×
+            ✕
           </button>
         </div>
 
-        {type === "findId" && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">
-              가입할 때 사용한 정보를 입력해주세요.
-            </p>
+        <p className="mb-6 text-sm text-ink-tertiary">{description}</p>
 
-            <input
-              type="email"
-              placeholder="이메일"
-              className="w-full border rounded-lg px-4 py-3"
-            />
+        <div className="space-y-3">
+          {type === "signup" && <Input type="text" placeholder="이름" />}
 
-            <button className="w-full bg-blue-600 text-white rounded-lg py-3">
-              아이디 찾기
-            </button>
-          </div>
-        )}
+          <Input type="email" placeholder="이메일" />
 
-        {type === "findPassword" && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">
-              가입한 이메일을 입력해주세요.
-            </p>
+          {type === "signup" && (
+            <Input type="password" placeholder="비밀번호" />
+          )}
 
-            <input
-              type="email"
-              placeholder="이메일"
-              className="w-full border rounded-lg px-4 py-3"
-            />
-
-            <button className="w-full bg-blue-600 text-white rounded-lg py-3">
-              비밀번호 찾기
-            </button>
-          </div>
-        )}
-
-        {type === "signup" && (
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="이름"
-              className="w-full border rounded-lg px-4 py-3"
-            />
-
-            <input
-              type="email"
-              placeholder="이메일"
-              className="w-full border rounded-lg px-4 py-3"
-            />
-
-            <input
-              type="password"
-              placeholder="비밀번호"
-              className="w-full border rounded-lg px-4 py-3"
-            />
-
-            <button className="w-full bg-blue-600 text-white rounded-lg py-3">
-              회원가입
-            </button>
-          </div>
-        )}
+          <Button fullWidth className="mt-2">
+            {title}
+          </Button>
+        </div>
       </div>
     </div>
   );
