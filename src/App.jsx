@@ -1,3 +1,4 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/login/Login";
@@ -5,6 +6,7 @@ import Main from "./pages/main/Main";
 import AgentList from "./pages/agent/AgentList";
 import AgentDetail from "./pages/agent/AgentDetail";
 import ConversationPage from "./pages/conversation/ConversationPage";
+import FileList from "./pages/file/FileList";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
@@ -21,7 +23,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/agents"
           element={
@@ -30,7 +31,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/agents/new"
           element={
@@ -39,7 +39,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/agents/:id"
           element={
@@ -48,12 +47,19 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/agents/:id/chat"
           element={
             <ProtectedRoute>
               <ConversationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/files"
+          element={
+            <ProtectedRoute>
+              <FileList />
             </ProtectedRoute>
           }
         />
