@@ -159,9 +159,9 @@ function AgentDetail() {
           </p>
         </Card>
 
-        <Button fullWidth disabled title="대화 화면은 다음 단계에서 연결돼요">
-          이 Agent와 대화 시작하기
-        </Button>
+        <Link to={`/agents/${agentId}/chat`}>
+          <Button fullWidth>이 Agent와 대화 시작하기</Button>
+        </Link>
       </div>
 
       {showEdit && (

@@ -4,6 +4,7 @@ import Login from "./pages/login/Login";
 import Main from "./pages/main/Main";
 import AgentList from "./pages/agent/AgentList";
 import AgentDetail from "./pages/agent/AgentDetail";
+import ConversationPage from "./pages/conversation/ConversationPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
@@ -44,6 +45,15 @@ function App() {
           element={
             <ProtectedRoute>
               <AgentDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/agents/:id/chat"
+          element={
+            <ProtectedRoute>
+              <ConversationPage />
             </ProtectedRoute>
           }
         />

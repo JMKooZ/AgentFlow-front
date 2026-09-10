@@ -5,6 +5,9 @@ import Button from "../../components/ui/Button";
 const TOOL_OPTIONS = [
   { value: "DATE_TIME", label: "날짜/시간 조회" },
   { value: "CALCULATOR", label: "계산기" },
+  { value: "CONVERSATION_QUERY", label: "이전 대화 검색" },
+  { value: "FILE_WRITE", label: "파일 생성" },
+  { value: "WEB_SEARCH", label: "웹 검색" },
 ];
 
 function AgentFormModal({ initial, onClose, onSubmit, submitting }) {

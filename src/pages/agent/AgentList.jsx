@@ -10,6 +10,9 @@ import { getMyAgents, createAgent, deleteAgent } from "../../api/agent";
 const TOOL_LABEL = {
   DATE_TIME: "날짜/시간 조회",
   CALCULATOR: "계산기",
+  CONVERSATION_QUERY: "이전 대화 검색",
+  FILE_WRITE: "파일 생성",
+  WEB_SEARCH: "웹 검색",
 };
 
 function AgentList() {
