@@ -1,8 +1,10 @@
+// src/components/layout/Sidebar.jsx
 import { NavLink } from "react-router-dom";
 
 const NAV_ITEMS = [
   { to: "/", label: "대시보드", end: true },
   { to: "/agents", label: "Agent" },
+  { to: "/files", label: "파일함" },
 ];
 
 function Sidebar() {
