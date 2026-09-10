@@ -1,26 +1,47 @@
+import { NavLink } from "react-router-dom";
+
+const NAV_ITEMS = [
+  { to: "/", label: "대시보드", end: true },
+  { to: "/agents", label: "Agent" },
+];
+
 function Sidebar() {
   return (
-    <aside className="w-64 bg-white border-r min-h-[calc(100vh-8rem)] p-4">
-      <button className="w-full bg-blue-600 text-white rounded-lg py-3 font-semibold mb-6">
-        + 새 Agent
-      </button>
-
-      <nav className="space-y-2">
-        <button className="w-full text-left px-4 py-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
-          Dashboard
+    <aside className="w-64 shrink-0 border-r border-line bg-surface p-4">
+      <NavLink to="/agents/new" className="mb-6 block">
+        <button className="h-12 w-full rounded-2xl bg-primary text-[15px] font-semibold text-white transition-colors hover:bg-primary-strong">
+          + 새 Agent
         </button>
+      </NavLink>
 
-        <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100">
-          Agents
-        </button>
+      <nav className="space-y-1">
+        {NAV_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `block rounded-2xl px-4 py-3 text-[15px] font-medium transition-colors ${
+                isActive
+                  ? "bg-primary-soft text-primary"
+                  : "text-ink-sub hover:bg-surface-alt"
+              }`
+            }
+          >
+            {item.label}
+          </NavLink>
+        ))}
 
-        <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100">
-          Conversations
-        </button>
+        <div className="flex items-center justify-between rounded-2xl px-4 py-3 text-[15px] text-ink-tertiary">
+          <span>Conversations</span>
+          <span className="rounded-full bg-surface-alt px-2 py-0.5 text-xs">
+            준비중
+          </span>
+        </div>
       </nav>
 
-      <div className="border-t mt-6 pt-4">
-        <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100">
+      <div className="mt-6 border-t border-line pt-4">
+        <button className="w-full rounded-2xl px-4 py-3 text-left text-[15px] font-medium text-ink-sub hover:bg-surface-alt">
           설정
         </button>
       </div>
