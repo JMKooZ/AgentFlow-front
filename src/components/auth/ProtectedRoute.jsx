@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getAccessToken, getRemainingTokenSeconds } from "../../utils/token";
 
@@ -8,23 +8,18 @@ function isSessionValid() {
 }
 
 function ProtectedRoute({ children }) {
-  const [redirect, setRedirect] = useState(false);
-  const alerted = useRef(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    if (!isSessionValid() && !alerted.current) {
-      alerted.current = true;
-      alert("로그인 후 이용해주세요.");
-      setRedirect(true);
-    }
+    setChecked(true);
   }, []);
 
-  if (!isSessionValid() && !redirect) {
-    // 첫 렌더 시점엔 아직 useEffect가 안 돌았으므로 아무것도 보여주지 않고 대기
+  if (!checked) {
+    // 첫 렌더 시점엔 아직 세션 체크가 끝나지 않았으니 잠깐 대기
     return null;
   }
 
-  if (redirect) {
+  if (!isSessionValid()) {
     return <Navigate to="/login" replace />;
   }
 
