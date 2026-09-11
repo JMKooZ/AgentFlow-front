@@ -9,7 +9,7 @@ import {
   createConversation,
   deleteConversation,
   getMessages,
-  sendMessage,
+  streamMessage,
 } from "../../api/conversation";
 
 function ConversationPage() {
@@ -23,6 +23,7 @@ function ConversationPage() {
   const [loadingList, setLoadingList] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
   const [input, setInput] = useState("");
   const [sendError, setSendError] = useState("");
 
@@ -32,26 +33,30 @@ function ConversationPage() {
     let ignore = false;
 
     getAgent(agentId)
-        .then((data) => {
-          if (!ignore) setAgent(data.data);
-        })
-        .catch((error) => console.error("Agent 조회 실패", error));
+      .then((data) => {
+        if (!ignore) setAgent(data.data);
+      })
+      .catch((error) => console.error("Agent 조회 실패", error));
 
     setLoadingList(true);
 
     getConversations(agentId)
-        .then((data) => {
-          if (ignore) return;
-          const list = data.data || [];
-          setConversations(list);
-          if (list.length > 0) setActiveId(list[0].id);
-        })
-        .catch((error) => {
-          if (!ignore) console.error("대화 목록 조회 실패", error);
-        })
-        .finally(() => {
-          if (!ignore) setLoadingList(false);
-        });
+      .then((data) => {
+        if (ignore) return;
+
+        const list = data.data || [];
+        setConversations(list);
+
+        if (list.length > 0) {
+          setActiveId(list[0].id);
+        }
+      })
+      .catch((error) => {
+        if (!ignore) console.error("대화 목록 조회 실패", error);
+      })
+      .finally(() => {
+        if (!ignore) setLoadingList(false);
+      });
 
     return () => {
       ignore = true;
@@ -65,18 +70,19 @@ function ConversationPage() {
     }
 
     let ignore = false;
+
     setLoadingMessages(true);
 
     getMessages(activeId)
-        .then((data) => {
-          if (!ignore) setMessages(data.data || []);
-        })
-        .catch((error) => {
-          if (!ignore) console.error("메시지 조회 실패", error);
-        })
-        .finally(() => {
-          if (!ignore) setLoadingMessages(false);
-        });
+      .then((data) => {
+        if (!ignore) setMessages(data.data || []);
+      })
+      .catch((error) => {
+        if (!ignore) console.error("메시지 조회 실패", error);
+      })
+      .finally(() => {
+        if (!ignore) setLoadingMessages(false);
+      });
 
     return () => {
       ignore = true;
@@ -85,15 +91,19 @@ function ConversationPage() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [messages, sending]);
+  }, [messages, sending, streamingText]);
 
   const handleNewConversation = async () => {
     const title = prompt("새 대화의 제목을 입력해주세요.", "새 대화");
-    if (!title) return;
+
+    if (!title) {
+      return;
+    }
 
     try {
       const data = await createConversation(agentId, title);
       const created = data.data;
+
       setConversations((prev) => [created, ...prev]);
       setActiveId(created.id);
     } catch (error) {
@@ -104,7 +114,10 @@ function ConversationPage() {
 
   const handleDeleteConversation = async (e, conversationId) => {
     e.stopPropagation();
-    if (!confirm("이 대화를 삭제할까요?")) return;
+
+    if (!confirm("이 대화를 삭제할까요?")) {
+      return;
+    }
 
     try {
       await deleteConversation(agentId, conversationId);
@@ -128,11 +141,15 @@ function ConversationPage() {
     e.preventDefault();
 
     const content = input.trim();
-    if (!content || !activeId || sending) return;
+
+    if (!content || !activeId || sending) {
+      return;
+    }
 
     setSendError("");
     setInput("");
     setSending(true);
+    setStreamingText("");
 
     const optimisticUserMessage = {
       id: `temp-${crypto.randomUUID()}`,
@@ -141,116 +158,139 @@ function ConversationPage() {
     };
     setMessages((prev) => [...prev, optimisticUserMessage]);
 
-    try {
-      const data = await sendMessage(activeId, content);
-      setMessages((prev) => [...prev, data.data]);
-    } catch (error) {
-      console.error("메시지 전송 실패", error);
-      setSendError("메시지 전송에 실패했어요. 다시 시도해주세요.");
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticUserMessage.id));
-      setInput(content);
-    } finally {
-      setSending(false);
-    }
+    let fullText = "";
+
+    await streamMessage(activeId, content, {
+      onChunk: (chunk) => {
+        fullText += chunk;
+        setStreamingText(fullText);
+      },
+      onComplete: () => {
+        setMessages((prev) => [
+          ...prev,
+          { id: `temp-${crypto.randomUUID()}`, role: "ASSISTANT", content: fullText },
+        ]);
+        setStreamingText("");
+        setSending(false);
+      },
+      onError: (error) => {
+        console.error("메시지 스트리밍 실패", error);
+        setSendError("메시지 전송에 실패했어요. 다시 시도해주세요.");
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticUserMessage.id));
+        setInput(content);
+        setStreamingText("");
+        setSending(false);
+      },
+    });
   };
 
   return (
-      <MainLayout>
-        <div className="mx-auto flex h-[calc(100vh-12rem)] max-w-6xl gap-4">
-          <aside className="w-64 shrink-0 overflow-y-auto rounded-3xl bg-surface p-3 shadow-card">
-            <div className="mb-2 flex items-center justify-between px-2 pt-1">
-              <Link to={`/agents/${agentId}`} className="text-xs font-medium text-ink-tertiary hover:text-ink-sub">
-                ← {agent?.name || "Agent"}
-              </Link>
+    <MainLayout>
+      <div className="mx-auto flex h-[calc(100vh-12rem)] max-w-6xl gap-4">
+        <aside className="w-64 shrink-0 overflow-y-auto rounded-3xl bg-surface p-3 shadow-card">
+          <div className="mb-2 flex items-center justify-between px-2 pt-1">
+            <Link to={`/agents/${agentId}`} className="text-xs font-medium text-ink-tertiary hover:text-ink-sub">
+              ← {agent?.name || "Agent"}
+            </Link>
+          </div>
+
+          <button
+            onClick={handleNewConversation}
+            className="mb-2 w-full rounded-2xl bg-primary-soft px-3 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10"
+          >
+            + 새 대화
+          </button>
+
+          {loadingList && <p className="px-2 py-3 text-sm text-ink-tertiary">불러오는 중...</p>}
+
+          {!loadingList && conversations.length === 0 && (
+            <p className="px-2 py-3 text-sm text-ink-tertiary">아직 대화가 없어요. 새 대화를 시작해보세요.</p>
+          )}
+
+          <div className="space-y-1">
+            {conversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                onClick={() => setActiveId(conversation.id)}
+                className={`flex cursor-pointer items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition-colors ${
+                  activeId === conversation.id ? "bg-primary-soft font-semibold text-primary" : "text-ink-sub hover:bg-surface-alt"
+                }`}
+              >
+                <span className="truncate">{conversation.title}</span>
+                <button onClick={(e) => handleDeleteConversation(e, conversation.id)} className="ml-2 shrink-0 text-ink-tertiary hover:text-danger">
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        <div className="flex flex-1 flex-col rounded-3xl bg-surface shadow-card">
+          {!activeId && (
+            <div className="flex flex-1 flex-col items-center justify-center text-center text-ink-tertiary">
+              <p>왼쪽에서 대화를 선택하거나</p>
+              <p>새 대화를 시작해보세요.</p>
             </div>
+          )}
 
-            <button
-                onClick={handleNewConversation}
-                className="mb-2 w-full rounded-2xl bg-primary-soft px-3 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10"
-            >
-              + 새 대화
-            </button>
+          {activeId && (
+            <>
+              <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-6">
+                {loadingMessages && <p className="text-center text-sm text-ink-tertiary">불러오는 중...</p>}
 
-            {loadingList && <p className="px-2 py-3 text-sm text-ink-tertiary">불러오는 중...</p>}
+                {!loadingMessages && messages.length === 0 && !sending && (
+                  <p className="text-center text-sm text-ink-tertiary">이 Agent에게 첫 메시지를 보내보세요.</p>
+                )}
 
-            {!loadingList && conversations.length === 0 && (
-                <p className="px-2 py-3 text-sm text-ink-tertiary">아직 대화가 없어요. 새 대화를 시작해보세요.</p>
-            )}
+                {messages.map((message) => (
+                  <MessageBubble key={message.id} message={message} />
+                ))}
 
-            <div className="space-y-1">
-              {conversations.map((conversation) => (
-                  <div
-                      key={conversation.id}
-                      onClick={() => setActiveId(conversation.id)}
-                      className={`flex cursor-pointer items-center justify-between rounded-2xl px-3 py-2.5 text-sm transition-colors ${
-                          activeId === conversation.id ? "bg-primary-soft font-semibold text-primary" : "text-ink-sub hover:bg-surface-alt"
-                      }`}
-                  >
-                    <span className="truncate">{conversation.title}</span>
-                    <button onClick={(e) => handleDeleteConversation(e, conversation.id)} className="ml-2 shrink-0 text-ink-tertiary hover:text-danger">
-                      ✕
-                    </button>
-                  </div>
-              ))}
-            </div>
-          </aside>
-
-          <div className="flex flex-1 flex-col rounded-3xl bg-surface shadow-card">
-            {!activeId && (
-                <div className="flex flex-1 flex-col items-center justify-center text-center text-ink-tertiary">
-                  <p>왼쪽에서 대화를 선택하거나</p>
-                  <p>새 대화를 시작해보세요.</p>
-                </div>
-            )}
-
-            {activeId && (
-                <>
-                  <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-6">
-                    {loadingMessages && <p className="text-center text-sm text-ink-tertiary">불러오는 중...</p>}
-
-                    {!loadingMessages && messages.length === 0 && (
-                        <p className="text-center text-sm text-ink-tertiary">이 Agent에게 첫 메시지를 보내보세요.</p>
-                    )}
-
-                    {messages.map((message) => (
-                        <MessageBubble key={message.id} message={message} />
-                    ))}
-
-                    {sending && (
-                        <div className="flex justify-start">
-                          <div className="max-w-[70%] rounded-2xl bg-surface-alt px-4 py-3 text-[15px] text-ink-tertiary">
-                            답변을 생각하는 중...
-                          </div>
+                {sending && (
+                  <div className="flex justify-start animate-fade-in">
+                    <div className="max-w-[70%] rounded-2xl bg-surface-alt px-4 py-3 text-[15px] leading-relaxed text-ink">
+                      {streamingText ? (
+                        <div className="prose prose-sm max-w-none">
+                          <ReactMarkdown>{streamingText}</ReactMarkdown>
                         </div>
-                    )}
+                      ) : (
+                        <div className="flex items-center gap-1.5 py-0.5">
+                          <span className="h-2 w-2 animate-bounce-dot rounded-full bg-ink-tertiary [animation-delay:0ms]" />
+                          <span className="h-2 w-2 animate-bounce-dot rounded-full bg-ink-tertiary [animation-delay:150ms]" />
+                          <span className="h-2 w-2 animate-bounce-dot rounded-full bg-ink-tertiary [animation-delay:300ms]" />
+                        </div>
+                      )}
+                    </div>
                   </div>
+                )}
+              </div>
 
-                  <form onSubmit={handleSend} className="flex items-end gap-2 border-t border-line p-4">
+              <form onSubmit={handleSend} className="flex items-end gap-2 border-t border-line p-4">
                 <textarea
-                    rows={1}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                        e.preventDefault();
-                        handleSend(e);
-                      }
-                    }}
-                    placeholder="메시지를 입력하세요"
-                    className="max-h-32 flex-1 resize-none rounded-2xl bg-surface-alt px-4 py-3 text-[15px] text-ink placeholder:text-ink-tertiary outline-none focus:bg-surface focus:ring-2 focus:ring-primary"
+                  rows={1}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                      e.preventDefault();
+                      handleSend(e);
+                    }
+                  }}
+                  placeholder="메시지를 입력하세요"
+                  className="max-h-32 flex-1 resize-none rounded-2xl bg-surface-alt px-4 py-3 text-[15px] text-ink placeholder:text-ink-tertiary outline-none focus:bg-surface focus:ring-2 focus:ring-primary"
                 />
 
-                    <Button type="submit" disabled={sending || !input.trim()}>
-                      전송
-                    </Button>
-                  </form>
+                <Button type="submit" disabled={sending || !input.trim()}>
+                  전송
+                </Button>
+              </form>
 
-                  {sendError && <p className="px-4 pb-3 text-sm text-danger">{sendError}</p>}
-                </>
-            )}
-          </div>
+              {sendError && <p className="px-4 pb-3 text-sm text-danger">{sendError}</p>}
+            </>
+          )}
         </div>
-      </MainLayout>
+      </div>
+    </MainLayout>
   );
 }
 
@@ -258,17 +298,17 @@ function MessageBubble({ message }) {
   const isUser = message.role === "USER";
 
   return (
-      <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-        <div className={`max-w-[70%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${isUser ? "bg-primary text-white" : "bg-surface-alt text-ink"}`}>
-          {isUser ? (
-              <p className="whitespace-pre-wrap">{message.content}</p>
-          ) : (
-              <div className="prose prose-sm max-w-none">
-                <ReactMarkdown>{message.content}</ReactMarkdown>
-              </div>
-          )}
-        </div>
+    <div className={`flex animate-message-in ${isUser ? "justify-end" : "justify-start"}`}>
+      <div className={`max-w-[70%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${isUser ? "bg-primary text-white" : "bg-surface-alt text-ink"}`}>
+        {isUser ? (
+          <p className="whitespace-pre-wrap">{message.content}</p>
+        ) : (
+          <div className="prose prose-sm max-w-none">
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
+        )}
       </div>
+    </div>
   );
 }
 
