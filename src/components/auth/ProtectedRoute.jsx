@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { getAccessToken, getRemainingTokenSeconds } from "../../utils/token";
 
 function isSessionValid() {
@@ -7,7 +7,7 @@ function isSessionValid() {
   return Boolean(accessToken) && getRemainingTokenSeconds(accessToken) > 0;
 }
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute() {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
@@ -15,7 +15,6 @@ function ProtectedRoute({ children }) {
   }, []);
 
   if (!checked) {
-    // 첫 렌더 시점엔 아직 세션 체크가 끝나지 않았으니 잠깐 대기
     return null;
   }
 
@@ -23,7 +22,7 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <Outlet />;
 }
 
 export default ProtectedRoute;

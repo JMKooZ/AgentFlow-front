@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 
@@ -20,17 +21,32 @@ function AgentFormModal({ initial, onClose, onSubmit, submitting }) {
   const toggleTool = (value) => {
     setTools((prev) => {
       const next = new Set(prev);
-      if (next.has(value)) next.delete(value);
-      else next.add(value);
+
+      if (next.has(value)) {
+        next.delete(value);
+      } else {
+        next.add(value);
+      }
+
       return next;
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name.trim()) return setError("Agent 이름을 입력해주세요.");
-    if (!systemPrompt.trim()) return setError("System Prompt를 입력해주세요.");
+
+    if (!name.trim()) {
+      setError("Agent 이름을 입력해주세요.");
+      return;
+    }
+
+    if (!systemPrompt.trim()) {
+      setError("System Prompt를 입력해주세요.");
+      return;
+    }
+
     setError("");
+
     onSubmit({
       name: name.trim(),
       description: description.trim(),
@@ -52,6 +68,7 @@ function AgentFormModal({ initial, onClose, onSubmit, submitting }) {
             <h2 className="text-xl font-bold text-ink">
               {initial ? "Agent 수정" : "새 Agent 만들기"}
             </h2>
+
             <button
                 type="button"
                 onClick={onClose}
@@ -68,6 +85,7 @@ function AgentFormModal({ initial, onClose, onSubmit, submitting }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
             />
+
             <Input
                 label="설명 (선택)"
                 placeholder="이 Agent가 어떤 역할을 하는지 간단히 적어주세요"
@@ -79,12 +97,14 @@ function AgentFormModal({ initial, onClose, onSubmit, submitting }) {
             <span className="mb-2 block text-sm font-medium text-ink-sub">
               System Prompt
             </span>
+
               <textarea
                   rows={4}
                   placeholder="Agent의 역할과 응답 방식을 지시해주세요"
                   value={systemPrompt}
                   onChange={(e) => setSystemPrompt(e.target.value)}
-                  className="w-full resize-none rounded-2xl bg-surface-alt px-4 py-3 text-[15px] text-ink placeholder:text-ink-tertiary outline-none focus:bg-surface focus:ring-2 focus:ring-primary"
+                  className="w-full resize-none rounded-2xl bg-surface-alt px-4 py-3 text-[15px]
+                text-ink placeholder:text-ink-tertiary outline-none focus:bg-surface focus:ring-2 focus:ring-primary"
               />
             </label>
 
@@ -92,21 +112,36 @@ function AgentFormModal({ initial, onClose, onSubmit, submitting }) {
             <span className="mb-2 block text-sm font-medium text-ink-sub">
               사용할 도구
             </span>
+
               <div className="flex flex-wrap gap-2">
                 {TOOL_OPTIONS.map((tool) => {
                   const active = tools.has(tool.value);
+
                   return (
                       <button
                           key={tool.value}
                           type="button"
                           onClick={() => toggleTool(tool.value)}
-                          className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${active ? "bg-primary-soft text-primary" : "bg-surface-alt text-ink-sub hover:bg-line"}`}
+                          className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                              active
+                                  ? "bg-primary-soft text-primary"
+                                  : "bg-surface-alt text-ink-sub hover:bg-line"
+                          }`}
                       >
                         {tool.label}
                       </button>
                   );
                 })}
               </div>
+            </div>
+
+            <div className="rounded-2xl bg-primary-soft px-4 py-3 text-sm leading-relaxed text-primary">
+              📄 이 Agent는 도구 선택과 별개로,{" "}
+              <Link to="/documents" onClick={onClose} className="font-semibold underline">
+                문서함
+              </Link>
+              에 업로드한 문서를 자동으로 참고해서 답변해요. 문서는 모든 Agent가 공통으로
+              사용해요 (Agent별로 따로 지정할 수는 없어요).
             </div>
 
             {error && <p className="text-sm text-danger">{error}</p>}
@@ -120,6 +155,7 @@ function AgentFormModal({ initial, onClose, onSubmit, submitting }) {
               >
                 취소
               </Button>
+
               <Button type="submit" fullWidth disabled={submitting}>
                 {submitting ? "저장 중..." : initial ? "수정하기" : "만들기"}
               </Button>

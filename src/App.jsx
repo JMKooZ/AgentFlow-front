@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/login/Login";
@@ -7,65 +6,28 @@ import AgentList from "./pages/agent/AgentList";
 import AgentDetail from "./pages/agent/AgentDetail";
 import ConversationPage from "./pages/conversation/ConversationPage";
 import FileList from "./pages/file/FileList";
+import DocumentList from "./pages/document/DocumentList";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/login" element={<Login />} />
 
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Main />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/agents"
-          element={
-            <ProtectedRoute>
-              <AgentList />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/agents/new"
-          element={
-            <ProtectedRoute>
-              <AgentList />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/agents/:id"
-          element={
-            <ProtectedRoute>
-              <AgentDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/agents/:id/chat"
-          element={
-            <ProtectedRoute>
-              <ConversationPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/files"
-          element={
-            <ProtectedRoute>
-              <FileList />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
-  );
+                {/* 여기 아래에 라우트만 추가하면 자동으로 로그인 보호가 적용돼요 */}
+                <Route element={<ProtectedRoute />}>
+                    <Route path="/" element={<Main />} />
+                    <Route path="/agents" element={<AgentList />} />
+                    <Route path="/agents/new" element={<AgentList />} />
+                    <Route path="/agents/:id" element={<AgentDetail />} />
+                    <Route path="/agents/:id/chat" element={<ConversationPage />} />
+                    <Route path="/files" element={<FileList />} />
+                    <Route path="/documents" element={<DocumentList />} />
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
 export default App;
