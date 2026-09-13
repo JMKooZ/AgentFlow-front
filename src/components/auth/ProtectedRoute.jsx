@@ -1,11 +1,25 @@
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { getAccessToken } from "../../utils/token";
+import { getAccessToken, getRemainingTokenSeconds } from "../../utils/token";
+
+function isSessionValid() {
+  const accessToken = getAccessToken();
+  return Boolean(accessToken) && getRemainingTokenSeconds(accessToken) > 0;
+}
 
 function ProtectedRoute({ children }) {
-  const accessToken = getAccessToken();
+  const [checked, setChecked] = useState(false);
 
-  if (!accessToken) {
-    alert("로그인 후 이용해주세요.");
+  useEffect(() => {
+    setChecked(true);
+  }, []);
+
+  if (!checked) {
+    // 첫 렌더 시점엔 아직 세션 체크가 끝나지 않았으니 잠깐 대기
+    return null;
+  }
+
+  if (!isSessionValid()) {
     return <Navigate to="/login" replace />;
   }
 

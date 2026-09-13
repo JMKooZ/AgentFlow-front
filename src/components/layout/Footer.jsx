@@ -1,6 +1,6 @@
 function Footer() {
   return (
-    <footer className="h-16 bg-white border-t flex items-center justify-center text-sm text-gray-400">
+    <footer className="flex h-14 items-center justify-center border-t border-line bg-surface text-sm text-ink-tertiary">
       © 2026 AgentFlow. All rights reserved.
     </footer>
   );

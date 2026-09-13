@@ -1,1 +1,102 @@
 @import "tailwindcss";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+
+@theme {
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Surface */
+  --color-page: #f2f4f6;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f9fafb;
+
+  /* Brand */
+  --color-primary: #3182f6;
+  --color-primary-strong: #1b64da;
+  --color-primary-soft: #e8f3ff;
+
+  /* Text */
+  --color-ink: #191f28;
+  --color-ink-sub: #4e5968;
+  --color-ink-tertiary: #8b95a1;
+  --color-ink-disabled: #b0b8c1;
+
+  /* Line */
+  --color-line: #e5e8eb;
+
+  /* Semantic */
+  --color-danger: #f04452;
+  --color-danger-soft: #fdecee;
+  --color-mint: #00c9a7;
+  --color-mint-soft: #e6faf5;
+
+  --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 4px 16px rgba(15, 23, 42, 0.08);
+  --shadow-float: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+body {
+  background-color: var(--color-page);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum";
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce-dot {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-message-in {
+  animation: message-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-bounce-dot {
+  animation: bounce-dot 1.2s ease-in-out infinite;
+}
