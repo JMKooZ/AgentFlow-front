@@ -44,76 +44,76 @@ function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-page px-4">
-      <div className="w-full max-w-md">
-        <div className="mb-10 flex flex-col items-center">
-          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-xl font-extrabold text-white">
-            AF
+      <div className="flex min-h-screen items-center justify-center bg-page px-4">
+        <div className="w-full max-w-md">
+          <div className="mb-10 flex flex-col items-center">
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-xl font-extrabold text-white">
+              AF
+            </div>
+
+            <h1 className="text-2xl font-bold text-ink">AgentFlow</h1>
+            <p className="mt-1.5 text-[15px] text-ink-tertiary">
+              AI 에이전트를 만들고, 대화를 시작해보세요
+            </p>
           </div>
 
-          <h1 className="text-2xl font-bold text-ink">AgentFlow</h1>
-          <p className="mt-1.5 text-[15px] text-ink-tertiary">
-            AI 에이전트를 만들고, 대화를 시작해보세요
-          </p>
-        </div>
+          <div className="rounded-3xl bg-surface p-8 shadow-card">
+            <form onSubmit={handleLogin} className="space-y-3">
+              <Input
+                  type="email"
+                  placeholder="이메일"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+              />
 
-        <div className="rounded-3xl bg-surface p-8 shadow-card">
-          <form onSubmit={handleLogin} className="space-y-3">
-            <Input
-              type="email"
-              placeholder="이메일"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-            />
+              <Input
+                  type="password"
+                  placeholder="비밀번호"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+              />
 
-            <Input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-            />
+              <Button type="submit" disabled={loading} fullWidth className="mt-5">
+                {loading ? "로그인 중..." : "로그인"}
+              </Button>
+            </form>
 
-            <Button type="submit" disabled={loading} fullWidth className="mt-5">
-              {loading ? "로그인 중..." : "로그인"}
-            </Button>
-          </form>
+            <div className="mt-6 flex items-center justify-center gap-3 text-sm text-ink-tertiary">
+              <button
+                  type="button"
+                  onClick={() => setModal("findId")}
+                  className="hover:text-ink-sub"
+              >
+                아이디 찾기
+              </button>
 
-          <div className="mt-6 flex items-center justify-center gap-3 text-sm text-ink-tertiary">
-            <button
-              type="button"
-              onClick={() => setModal("findId")}
-              className="hover:text-ink-sub"
-            >
-              아이디 찾기
-            </button>
+              <span className="text-line">·</span>
 
-            <span className="text-line">·</span>
+              <button
+                  type="button"
+                  onClick={() => setModal("findPassword")}
+                  className="hover:text-ink-sub"
+              >
+                비밀번호 찾기
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setModal("findPassword")}
-              className="hover:text-ink-sub"
-            >
-              비밀번호 찾기
-            </button>
+              <span className="text-line">·</span>
 
-            <span className="text-line">·</span>
-
-            <button
-              type="button"
-              onClick={() => setModal("signup")}
-              className="hover:text-ink-sub"
-            >
-              회원가입
-            </button>
+              <button
+                  type="button"
+                  onClick={() => setModal("signup")}
+                  className="hover:text-ink-sub"
+              >
+                회원가입
+              </button>
+            </div>
           </div>
         </div>
+
+        {modal && <AuthModal type={modal} onClose={() => setModal(null)} />}
       </div>
-
-      {modal && <AuthModal type={modal} onClose={() => setModal(null)} />}
-    </div>
   );
 }
 
@@ -131,43 +131,43 @@ function AuthModal({ type, onClose }) {
   }[type];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
-      onClick={onClose}
-    >
       <div
-        className="w-full max-w-md rounded-3xl bg-surface p-8 shadow-float"
-        onClick={(e) => e.stopPropagation()}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 animate-fade-in"
+          onClick={onClose}
       >
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-ink">{title}</h2>
+        <div
+            className="w-full max-w-md rounded-3xl bg-surface p-8 shadow-float animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-1 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-ink">{title}</h2>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-tertiary hover:bg-surface-alt"
-          >
-            ✕
-          </button>
-        </div>
+            <button
+                type="button"
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-ink-tertiary hover:bg-surface-alt"
+            >
+              ✕
+            </button>
+          </div>
 
-        <p className="mb-6 text-sm text-ink-tertiary">{description}</p>
+          <p className="mb-6 text-sm text-ink-tertiary">{description}</p>
 
-        <div className="space-y-3">
-          {type === "signup" && <Input type="text" placeholder="이름" />}
+          <div className="space-y-3">
+            {type === "signup" && <Input type="text" placeholder="이름" />}
 
-          <Input type="email" placeholder="이메일" />
+            <Input type="email" placeholder="이메일" />
 
-          {type === "signup" && (
-            <Input type="password" placeholder="비밀번호" />
-          )}
+            {type === "signup" && (
+                <Input type="password" placeholder="비밀번호" />
+            )}
 
-          <Button fullWidth className="mt-2">
-            {title}
-          </Button>
+            <Button fullWidth className="mt-2">
+              {title}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
   );
 }
 
